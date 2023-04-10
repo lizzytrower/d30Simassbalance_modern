@@ -1,7 +1,7 @@
 %%
 %Silicon isotope mass balance Monte Carlo model
-%Elizabeth Trower, June 2021
-%this code was designed with Matlab 2018b
+%Elizabeth Trower, April 2023
+%this code was designed with Matlab 2021b
 
 %This model is based on the bones of the code from Trower & Fischer 2019;
 %it was redesigned to explore Si isotope mass balance in the modern silica
@@ -28,8 +28,10 @@ icdfBSE = icdf(pdfBSE,z00);
 
 %SINKS
 %diatoms
-diatomdata = xlsread('d30Si_data_compilation_05072021.xlsx',3,'A:A');
-diatomseddata = xlsread('d30Si_data_compilation_05072021.xlsx',4,'A:A');
+diatomdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    3,'Range','A:A');
+diatomseddata = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',4,'Range','A:A');
 alldiatomdata = cat(1,diatomdata,diatomseddata);
 pdfd30Sidiatom = fitdist(diatomdata,'Kernel');
 pdfd30Sidiatomsed = fitdist(diatomseddata,'Kernel');
@@ -47,7 +49,8 @@ icdfFdiatom = icdf(pdfFdiatom,z0b);
 %this currently attributes the entire F_B sink to diatoms
 
 %radiolarians
-raddata = xlsread('d30Si_data_compilation_05072021.xlsx',6,'A:A');
+raddata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',6,...
+    'Range','A:A');
 pdfd30Sirad = fitdist(raddata,'Kernel');
 z1 = rand(1,n);
 icdfd30Sirad = icdf(pdfd30Sirad,z1);
@@ -57,7 +60,8 @@ icdfd30Sirad = icdf(pdfd30Sirad,z1);
 %radiolarian contribution is negligible compared to the diatom flux).
 
 %sponges
-spongedata = xlsread('d30Si_data_compilation_05072021.xlsx',7,'A:A');
+spongedata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    7,'Range','A:A');
 pdfd30Sisponge = fitdist(spongedata,'Kernel');
 z2 = rand(1,n);
 icdfd30Sisponge = icdf(pdfd30Sisponge,z2);
@@ -85,9 +89,12 @@ icdfFRW = icdf(pdfFRW,z3b);
 %this section uses extra column data to choose either loess or soil data
 %for d30Si of aeolian dust. it does not make a substantial difference to
 %the overall balance.
-dustdata = xlsread('d30Si_data_compilation_05072021.xlsx',9,'A:A');
-[num,txt,raw] = xlsread('d30Si_data_compilation_05072021.xlsx',9,'F:F');
-dustdatatype = categorical(txt(2:end));
+dustdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',9,...
+    'Range','A:A');
+dustdata = dustdata(2:end);
+dustdatatype_table = readtable('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',9,'Range','F:F');
+dustdatatype = categorical(table2cell(dustdatatype_table));
 loessdata = dustdata(dustdatatype == 'loess');
 soildata = dustdata(dustdatatype == 'soil');
 pdfd30Sidust = fitdist(loessdata,'Kernel');
@@ -103,7 +110,8 @@ z4b = rand(1,n);
 icdfFdust = icdf(pdfFdust,z4b);
 
 %hydrothermal fluids
-hydrothermaldata = xlsread('d30Si_data_compilation_05072021.xlsx',10,'A:A');
+hydrothermaldata = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',10,'Range','A:A');
 pdfd30Sihydrothermal = fitdist(hydrothermaldata,'Kernel');
 z5 = rand(1,n);
 icdfd30Sihydrothermal = icdf(pdfd30Sihydrothermal,z5);
@@ -116,11 +124,15 @@ z5b = rand(1,n);
 icdfFhydrothermal = icdf(pdfFhydrothermal,z5b);
 
 %rivers
-riverdata = xlsread('d30Si_data_compilation_05072021.xlsx',11,'A:A');
-[num2,txt2,raw2] = xlsread('d30Si_data_compilation_05072021.xlsx',11,'F:F');
-riverdatatype = categorical(txt2(2:end));
-[num3,txt3,raw3] = xlsread('d30Si_data_compilation_05072021.xlsx',11,'G:G');
-riverCOSCATtype = categorical(txt3(2:end));
+riverdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    11,'Range','A:A');
+riverdata = riverdata(2:end);
+riverdatatype_table = readtable('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',11,'Range','F:F');
+riverdatatype = categorical(table2cell(riverdatatype_table));
+riverCOSCATtype_table = readtable('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',11,'Range','G:G');
+riverCOSCATtype = categorical(table2cell(riverCOSCATtype_table));
 rivermouthdata = riverdata(riverdatatype == 'mouth');
 pdfd30Sirivermouth = fitdist(rivermouthdata,'Kernel');
 pdfd30Siriver = fitdist(riverdata,'Kernel');
@@ -136,7 +148,8 @@ z6b = rand(1,n);
 icdfFriver = icdf(pdfFriver,z6b);
 
 %rivers_aSi
-riverasidata = xlsread('d30Si_data_compilation_05072021.xlsx',13,'A:A');
+riverasidata = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',13,'Range','A:A');
 pdfd30Siriverasi = fitdist(riverasidata,'Kernel');
 z7 = rand(1,n);
 icdfd30Siriverasi = icdf(pdfd30Siriverasi,z7);
@@ -149,8 +162,10 @@ z7b = rand(1,n);
 icdfFriverasi = icdf(pdfFriverasi,z7b);
 
 %groundwater
-GWdata = xlsread('d30Si_data_compilation_05072021.xlsx',12,'A:A');
-GWsalinity = xlsread('d30Si_data_compilation_05072021.xlsx',12,'F:F');
+GWdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    12,'Range','A:A');
+GWsalinity = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    12,'Range','F:F');
 GWfresh = GWdata(GWsalinity<4);
 GWmarine = GWdata(GWsalinity>25);
 pdfd30SiGWfresh = fitdist(GWfresh,'Kernel');
@@ -189,7 +204,8 @@ z9b = rand(1,n);
 icdfFlowTweath = icdf(pdfFlowTweath,z9b);
 
 %ice sheet meltwaters
-ISMWdata = xlsread('d30Si_data_compilation_05072021.xlsx',15,'A:A');
+ISMWdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    15,'Range','A:A');
 pdfd30SiISMW = fitdist(ISMWdata,'Kernel');
 z10 = rand(1,n);
 icdfd30SiISMW = icdf(pdfd30SiISMW,z10);
@@ -380,11 +396,12 @@ end
 
 %Grab DSi flux for each COSCAT from spreadsheet (data from Durr et al.,
 %2011).
-DSi_flux_COSCATs = xlsread('COSCAT DSi flux data.xlsx',1,'B:B');
+DSi_flux_COSCATs = readmatrix('COSCAT DSi flux data.xlsx','Sheet',1,...
+    'Range','B2:B15');
 DSi_flux_sum = sum(DSi_flux_COSCATs);
 
 %Generate flux-weighted river DSi d30Si estimates.
-icdfd30Si_river_fluxweight = sum((DSi_flux_COSCATs./DSi_flux_sum)'*...
+icdfd30Si_river_fluxweight = sum((DSi_flux_COSCATs./DSi_flux_sum).*...
     icdfd30Si_COSCATs,1);
 
 %Calculate pdf of flux-weighted river DSi d30Si estimates and add to
@@ -456,6 +473,7 @@ xlim([0 30])
 d30SiRW_est = (d30Si_norm_sources.*(F_sinks + icdfFRW) - ...
     (icdfFdiatom.*icdfd30Sidiatom +icdfFsponge.*icdfd30Sisponge))...
     ./icdfFRW;
+
 subplot(3,2,5)
 yyaxis left
 hRW = histogram(d30SiRW_est,-4:.1:4);
@@ -469,7 +487,8 @@ xvals = -2:.01:3.5;
 yvals = pdf(pdfd30Sidiatom,xvals);
 plot(xvals,yvals)
 xline(-0.35,'g','LineWidth',1.5)
-legend('model est','BSi sinks','diatom data','BSE','Location','northwest')
+legend('model est','BSi sinks','diatom data','BSE',...
+    'Location','northwest')
 xlim([-4 4])
 xlabel('\delta^3^0Si')
 
@@ -631,10 +650,507 @@ ylim([0 400])
 xlim([-4 4])
 
 %%
+%This section uses older versions of the marine silica budget, combined
+%with our assembled d30Si data, to assess the extent of d30Si mismatch.
+
+%Treguer et al. 1995 budget
+Friveravg_Treguer_etal_1995 = 5;
+Friver1sd_Treguer_etal_1995 = 1.1;
+pdfFriver_Treguer_etal_1995 = truncate(makedist('Normal','mu',...
+    Friveravg_Treguer_etal_1995,'sigma',Friver1sd_Treguer_etal_1995),0,...
+    inf);
+z6b_Treguer_etal_1995 = rand(1,n);
+icdfFriver_Treguer_etal_1995 = icdf(pdfFriver_Treguer_etal_1995,...
+    z6b_Treguer_etal_1995);
+
+Fdustavg_Treguer_etal_1995 = 0.5;
+Fdust1sd_Treguer_etal_1995 = 0.5;
+pdfFdust_Treguer_etal_1995 = truncate(makedist('Normal','mu',...
+    Fdustavg_Treguer_etal_1995,'sigma',Fdust1sd_Treguer_etal_1995),0,inf);
+z4b_Treguer_etal_1995 = rand(1,n);
+icdfFdust_Treguer_etal_1995 = icdf(pdfFdust_Treguer_etal_1995,...
+    z4b_Treguer_etal_1995);
+
+FlowTweathavg_Treguer_etal_1995 = 0.4;
+FlowTweath1sd_Treguer_etal_1995 = 0.3;
+pdfFlowTweath_Treguer_etal_1995 = truncate(makedist('Normal','mu',...
+    FlowTweathavg_Treguer_etal_1995,'sigma',...
+    FlowTweath1sd_Treguer_etal_1995),0,inf);
+z9b_Treguer_etal_1995 = rand(1,n);
+icdfFlowTweath_Treguer_etal_1995 = icdf(pdfFlowTweath_Treguer_etal_1995,...
+    z9b_Treguer_etal_1995);
+
+Fhydrothermalavg_Treguer_etal_1995 = 0.2;
+Fhydrothermal1sd_Treguer_etal_1995 = 0.1;
+pdfFhydrothermal_Treguer_etal_1995 = truncate(makedist('Normal','mu',...
+    Fhydrothermalavg_Treguer_etal_1995,'sigma',...
+    Fhydrothermal1sd_Treguer_etal_1995),0,inf);
+z5b_Treguer_etal_1995 = rand(1,n);
+icdfFhydrothermal_Treguer_etal_1995 = ...
+    icdf(pdfFhydrothermal_Treguer_etal_1995,z5b_Treguer_etal_1995);
+
+F_sources_Treguer_etal_1995 = icdfFriver_Treguer_etal_1995 + ...
+    icdfFdust_Treguer_etal_1995 + icdfFlowTweath_Treguer_etal_1995 + ...
+    icdfFhydrothermal_Treguer_etal_1995;
+
+d30Si_norm_sources_Treguer_etal_1995 = ...
+    (icdfFdust_Treguer_etal_1995.*icdfd30Sidust + ...
+    icdfFhydrothermal_Treguer_etal_1995.*...
+    icdfd30Sihydrothermal + ...
+    icdfFriver_Treguer_etal_1995.*icdfd30Siriver + ...
+    icdfFlowTweath_Treguer_etal_1995.*icdfd30SilowTweath )./...
+    F_sources_Treguer_etal_1995;
+
+Fdiatomavg_Treguer_etal_1995 = 7.1;
+Fdiatom1sd_Treguer_etal_1995 = 1.1;
+pdfFdiatom_Treguer_etal_1995 = truncate(makedist('Normal','mu',...
+    Fdiatomavg_Treguer_etal_1995,'sigma',Fdiatom1sd_Treguer_etal_1995),...
+    0,inf);
+z0b_Treguer_etal_1995 = rand(1,n);
+icdfFdiatom_Treguer_etal_1995 = icdf(pdfFdiatom_Treguer_etal_1995,...
+    z0b_Treguer_etal_1995);
+
+F_sinks_Treguer_etal_1995 = icdfFdiatom_Treguer_etal_1995;
+
+d30Si_norm_sinks_Treguer_etal_1995 = icdfd30Sidiatom;
+
+d30Si_norm_mismatch_Treguer_etal_1995 = ...
+    d30Si_norm_sources_Treguer_etal_1995 - ...
+    d30Si_norm_sinks_Treguer_etal_1995;
+
+F_mismatch_Treguer_etal_1995 = F_sources_Treguer_etal_1995 -...
+    F_sinks_Treguer_etal_1995;
+
+%DeMaster 2002 budget
+Friver_DeMaster_2002 = 5.6;
+Fdust_DeMaster_2002 = 0.5;
+Fhydrothermal_DeMaster_2002 = 0.6;
+
+F_sources_DeMaster_2002 = Friver_DeMaster_2002 + Fdust_DeMaster_2002 +...
+    Fhydrothermal_DeMaster_2002;
+
+d30Si_norm_sources_DeMaster_2002 = ...
+    (Fdust_DeMaster_2002.*icdfd30Sidust + ...
+    Fhydrothermal_DeMaster_2002.*...
+    icdfd30Sihydrothermal + ...
+   Friver_DeMaster_2002.*icdfd30Siriver)./...
+    F_sources_DeMaster_2002;
+
+Fdiatommin_DeMaster_2002 = 6.5;
+Fdiatommax_DeMaster_2002 = 7.4;
+pdfFdiatom_DeMaster_2002 = truncate(makedist('Uniform','Lower',...
+    Fdiatommin_DeMaster_2002,'Upper',Fdiatommax_DeMaster_2002),...
+    0,inf);
+z0b_DeMaster_2002 = rand(1,n);
+icdfFdiatom_DeMaster_2002 = icdf(pdfFdiatom_DeMaster_2002,...
+    z0b_DeMaster_2002);
+
+F_sinks_DeMaster_2002 = icdfFdiatom_DeMaster_2002;
+
+d30Si_norm_sinks_DeMaster_2002 = icdfd30Sidiatom;
+
+d30Si_norm_mismatch_DeMaster_2002 = d30Si_norm_sources_DeMaster_2002 - ...
+    d30Si_norm_sinks_DeMaster_2002;
+
+F_mismatch_DeMaster_2002 = F_sources_DeMaster_2002-...
+    F_sinks_DeMaster_2002;
+
+%Treguer and De La Rocha 2013 budget, excluding RW
+Friveravg_TDLR2013_noRW = 6.2;
+Friver1sd_TDLR2013_noRW = 1.8;
+pdfFriver_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Friveravg_TDLR2013_noRW,'sigma',Friver1sd_TDLR2013_noRW),0,...
+    inf);
+z6b_TDLR2013_noRW = rand(1,n);
+icdfFriver_TDLR2013_noRW = icdf(pdfFriver_TDLR2013_noRW,...
+    z6b_TDLR2013_noRW);
+
+Friverasiavg_TDLR2013_noRW = 1.1;
+Friverasi1sd_TDLR2013_noRW = 0.5;
+pdfFriverasi_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Friverasiavg_TDLR2013_noRW,'sigma',Friverasi1sd_TDLR2013_noRW),0,inf);
+z7b_TDLR2013_noRW = rand(1,n);
+icdfFriverasi_TDLR2013_noRW = icdf(pdfFriverasi_TDLR2013_noRW,...
+    z7b_TDLR2013_noRW);
+
+FGWfreshavg_TDLR2013_noRW = 0.6;
+FGWfresh1sd_TDLR2013_noRW = 0.6;
+pdfFGWfresh_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    FGWfreshavg_TDLR2013_noRW,'sigma',FGWfresh1sd_TDLR2013_noRW),0,inf);
+z8c_TDLR2013_noRW = rand(1,n);
+icdfFGWfresh_TDLR2013_noRW = icdf(pdfFGWfresh_TDLR2013_noRW,...
+    z8c_TDLR2013_noRW);
+
+Fdustavg_TDLR2013_noRW = 0.5;
+Fdust1sd_TDLR2013_noRW = 0.5;
+pdfFdust_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Fdustavg_TDLR2013_noRW,'sigma',Fdust1sd_TDLR2013_noRW),0,inf);
+z4b_TDLR2013_noRW = rand(1,n);
+icdfFdust_TDLR2013_noRW = icdf(pdfFdust_TDLR2013_noRW,...
+    z4b_TDLR2013_noRW);
+
+FlowTweathavg_TDLR2013_noRW = 1.9;
+FlowTweath1sd_TDLR2013_noRW = 0.7;
+pdfFlowTweath_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    FlowTweathavg_TDLR2013_noRW,'sigma',...
+    FlowTweath1sd_TDLR2013_noRW),0,inf);
+z9b_TDLR2013_noRW = rand(1,n);
+icdfFlowTweath_TDLR2013_noRW = icdf(pdfFlowTweath_TDLR2013_noRW,...
+    z9b_TDLR2013_noRW);
+
+Fhydrothermalavg_TDLR2013_noRW = 0.6;
+Fhydrothermal1sd_TDLR2013_noRW = 0.4;
+pdfFhydrothermal_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Fhydrothermalavg_TDLR2013_noRW,'sigma',...
+    Fhydrothermal1sd_TDLR2013_noRW),0,inf);
+z5b_TDLR2013_noRW = rand(1,n);
+icdfFhydrothermal_TDLR2013_noRW = ...
+    icdf(pdfFhydrothermal_TDLR2013_noRW,z5b_TDLR2013_noRW);
+
+F_sources_TDLR2013_noRW = icdfFriver_TDLR2013_noRW + ...
+    icdfFriverasi_TDLR2013_noRW + icdfFGWfresh_TDLR2013_noRW +...
+    icdfFdust_TDLR2013_noRW + icdfFlowTweath_TDLR2013_noRW + ...
+    icdfFhydrothermal_TDLR2013_noRW;
+
+d30Si_norm_sources_TDLR2013_noRW = ...
+    (icdfFdust_TDLR2013_noRW.*icdfd30Sidust + ...
+    icdfFhydrothermal_TDLR2013_noRW.*...
+    icdfd30Sihydrothermal + ...
+    icdfFriver_TDLR2013_noRW.*icdfd30Siriver + ...
+    icdfFlowTweath_TDLR2013_noRW.*icdfd30SilowTweath +...
+    icdfFriverasi_TDLR2013_noRW.*icdfd30Siriverasi +...
+    icdfFGWfresh_TDLR2013_noRW.*icdfd30SiGWfresh)./...
+    F_sources_TDLR2013_noRW;
+
+Fdiatomavg_TDLR2013_noRW = 6.3;
+Fdiatom1sd_TDLR2013_noRW = 2.1;
+pdfFdiatom_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Fdiatomavg_TDLR2013_noRW,'sigma',Fdiatom1sd_TDLR2013_noRW),...
+    0,inf);
+z0b_TDLR2013_noRW = rand(1,n);
+icdfFdiatom_TDLR2013_noRW = icdf(pdfFdiatom_TDLR2013_noRW,...
+    z0b_TDLR2013_noRW);
+
+Fspongeavg_TDLR2013_noRW = 3.6;
+Fsponge1sd_TDLR2013_noRW = 3.7;
+pdfFsponge_TDLR2013_noRW = truncate(makedist('Normal','mu',...
+    Fspongeavg_TDLR2013_noRW,'sigma',Fsponge1sd_TDLR2013_noRW),...
+    0,inf);
+z2b_TDLR2013_noRW = rand(1,n);
+icdfFsponge_TDLR2013_noRW = icdf(pdfFsponge_TDLR2013_noRW,...
+    z2b_TDLR2013_noRW);
+
+F_sinks_TDLR2013_noRW = icdfFdiatom_TDLR2013_noRW + ...
+    icdfFsponge_TDLR2013_noRW;
+
+d30Si_norm_sinks_TDLR2013_noRW = ...
+    (icdfFdiatom_TDLR2013_noRW.*icdfd30Sidiatom +...
+    icdfFsponge_TDLR2013_noRW.*icdfd30Sisponge)./...
+    F_sinks_TDLR2013_noRW;
+
+d30Si_norm_mismatch_TDLR2013_noRW = d30Si_norm_sources_TDLR2013_noRW - ...
+    d30Si_norm_sinks_TDLR2013_noRW;
+
+F_mismatch_TDLR2013_noRW = F_sources_TDLR2013_noRW -...
+    F_sinks_TDLR2013_noRW;
+
+%Treguer and De La Rocha 2013 budget, assuming d30Si_RW = d30Si_diatom
+Friveravg_TDLR2013_withRW = 6.2;
+Friver1sd_TDLR2013_withRW = 1.8;
+pdfFriver_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Friveravg_TDLR2013_withRW,'sigma',Friver1sd_TDLR2013_withRW),0,...
+    inf);
+z6b_TDLR2013_withRW = rand(1,n);
+icdfFriver_TDLR2013_withRW = icdf(pdfFriver_TDLR2013_withRW,...
+    z6b_TDLR2013_withRW);
+
+Friverasiavg_TDLR2013_withRW = 1.1;
+Friverasi1sd_TDLR2013_withRW = 0.5;
+pdfFriverasi_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Friverasiavg_TDLR2013_withRW,'sigma',Friverasi1sd_TDLR2013_withRW),0,inf);
+z7b_TDLR2013_withRW = rand(1,n);
+icdfFriverasi_TDLR2013_withRW = icdf(pdfFriverasi_TDLR2013_withRW,...
+    z7b_TDLR2013_withRW);
+
+FGWfreshavg_TDLR2013_withRW = 0.6;
+FGWfresh1sd_TDLR2013_withRW = 0.6;
+pdfFGWfresh_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    FGWfreshavg_TDLR2013_withRW,'sigma',FGWfresh1sd_TDLR2013_withRW),0,inf);
+z8c_TDLR2013_withRW = rand(1,n);
+icdfFGWfresh_TDLR2013_withRW = icdf(pdfFGWfresh_TDLR2013_withRW,...
+    z8c_TDLR2013_withRW);
+
+Fdustavg_TDLR2013_withRW = 0.5;
+Fdust1sd_TDLR2013_withRW = 0.5;
+pdfFdust_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Fdustavg_TDLR2013_withRW,'sigma',Fdust1sd_TDLR2013_withRW),0,inf);
+z4b_TDLR2013_withRW = rand(1,n);
+icdfFdust_TDLR2013_withRW = icdf(pdfFdust_TDLR2013_withRW,...
+    z4b_TDLR2013_withRW);
+
+FlowTweathavg_TDLR2013_withRW = 1.9;
+FlowTweath1sd_TDLR2013_withRW = 0.7;
+pdfFlowTweath_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    FlowTweathavg_TDLR2013_withRW,'sigma',...
+    FlowTweath1sd_TDLR2013_withRW),0,inf);
+z9b_TDLR2013_withRW = rand(1,n);
+icdfFlowTweath_TDLR2013_withRW = icdf(pdfFlowTweath_TDLR2013_withRW,...
+    z9b_TDLR2013_withRW);
+
+Fhydrothermalavg_TDLR2013_withRW = 0.6;
+Fhydrothermal1sd_TDLR2013_withRW = 0.4;
+pdfFhydrothermal_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Fhydrothermalavg_TDLR2013_withRW,'sigma',...
+    Fhydrothermal1sd_TDLR2013_withRW),0,inf);
+z5b_TDLR2013_withRW = rand(1,n);
+icdfFhydrothermal_TDLR2013_withRW = ...
+    icdf(pdfFhydrothermal_TDLR2013_withRW,z5b_TDLR2013_withRW);
+
+F_sources_TDLR2013_withRW = icdfFriver_TDLR2013_withRW + ...
+    icdfFriverasi_TDLR2013_withRW + icdfFGWfresh_TDLR2013_withRW +...
+    icdfFdust_TDLR2013_withRW + icdfFlowTweath_TDLR2013_withRW + ...
+    icdfFhydrothermal_TDLR2013_withRW;
+
+d30Si_norm_sources_TDLR2013_withRW = ...
+    (icdfFdust_TDLR2013_withRW.*icdfd30Sidust + ...
+    icdfFhydrothermal_TDLR2013_withRW.*...
+    icdfd30Sihydrothermal + ...
+    icdfFriver_TDLR2013_withRW.*icdfd30Siriver + ...
+    icdfFlowTweath_TDLR2013_withRW.*icdfd30SilowTweath +...
+    icdfFriverasi_TDLR2013_withRW.*icdfd30Siriverasi +...
+    icdfFGWfresh_TDLR2013_withRW.*icdfd30SiGWfresh)./...
+    F_sources_TDLR2013_withRW;
+
+Fdiatomavg_TDLR2013_withRW = 6.3;
+Fdiatom1sd_TDLR2013_withRW = 2.1;
+pdfFdiatom_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Fdiatomavg_TDLR2013_withRW,'sigma',Fdiatom1sd_TDLR2013_withRW),...
+    0,inf);
+z0b_TDLR2013_withRW = rand(1,n);
+icdfFdiatom_TDLR2013_withRW = icdf(pdfFdiatom_TDLR2013_withRW,...
+    z0b_TDLR2013_withRW);
+
+Fspongeavg_TDLR2013_withRW = 3.6;
+Fsponge1sd_TDLR2013_withRW = 3.7;
+pdfFsponge_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    Fspongeavg_TDLR2013_withRW,'sigma',Fsponge1sd_TDLR2013_withRW),...
+    0,inf);
+z2b_TDLR2013_withRW = rand(1,n);
+icdfFsponge_TDLR2013_withRW = icdf(pdfFsponge_TDLR2013_withRW,...
+    z2b_TDLR2013_withRW);
+
+FRWavg_TDLR2013_withRW = 1.5;
+FRW1sd_TDLR2013_withRW = 0.5;
+pdfFRW_TDLR2013_withRW = truncate(makedist('Normal','mu',...
+    FRWavg_TDLR2013_withRW,'sigma',FRW1sd_TDLR2013_withRW),...
+    0,inf);
+z3b_TDLR2013_withRW = rand(1,n);
+icdfFRW_TDLR2013_withRW = icdf(pdfFRW_TDLR2013_withRW,...
+    z3b_TDLR2013_withRW);
+
+F_sinks_TDLR2013_withRW = icdfFdiatom_TDLR2013_withRW + ...
+    icdfFsponge_TDLR2013_withRW + icdfFRW_TDLR2013_withRW;
+
+d30Si_norm_sinks_TDLR2013_withRW = ...
+    (icdfFdiatom_TDLR2013_withRW.*icdfd30Sidiatom +...
+    icdfFsponge_TDLR2013_withRW.*icdfd30Sisponge +...
+    icdfFRW_TDLR2013_withRW.*d30SiRW_est)./...
+    F_sinks_TDLR2013_withRW;
+
+d30Si_norm_mismatch_TDLR2013_withRW = ...
+    d30Si_norm_sources_TDLR2013_withRW - d30Si_norm_sinks_TDLR2013_withRW;
+
+F_mismatch_TDLR2013_withRW = F_sources_TDLR2013_withRW -...
+    F_sinks_TDLR2013_withRW;
+
+%DeMaster 2019 budget
+Friveravg_DeMaster_2019 = 6.3;
+Friver1sd_DeMaster_2019 = 1.8;
+pdfFriver_DeMaster_2019 = truncate(makedist('Normal','mu',...
+    Friveravg_DeMaster_2019,'sigma',Friver1sd_DeMaster_2019),0,...
+    inf);
+z6b_DeMaster_2019 = rand(1,n);
+icdfFriver_DeMaster_2019 = icdf(pdfFriver_DeMaster_2019,...
+    z6b_DeMaster_2019);
+
+Friverasiavg_DeMaster_2019 = 0.2;
+Friverasi1sd_DeMaster_2019 = 0.5;
+pdfFriverasi_DeMaster_2019 = truncate(makedist('Normal','mu',...
+    Friverasiavg_DeMaster_2019,'sigma',Friverasi1sd_DeMaster_2019),0,inf);
+z7b_DeMaster_2019 = rand(1,n);
+icdfFriverasi_DeMaster_2019 = icdf(pdfFriverasi_DeMaster_2019,...
+    z7b_DeMaster_2019);
+
+FGWfreshmin_DeMaster_2019 = 0.6;
+FGWfreshmax_DeMaster_2019 = 3.8;
+pdfFGWfresh_DeMaster_2019 = truncate(makedist('Uniform','Lower',...
+    FGWfreshmin_DeMaster_2019,'Upper',FGWfreshmax_DeMaster_2019),0,inf);
+z8c_DeMaster_2019 = rand(1,n);
+icdfFGWfresh_DeMaster_2019 = icdf(pdfFGWfresh_DeMaster_2019,...
+    z8c_DeMaster_2019);
+
+Fdustavg_DeMaster_2019 = 0.05;
+Fdust1sd_DeMaster_2019 = 0.05;
+pdfFdust_DeMaster_2019 = truncate(makedist('Normal','mu',...
+    Fdustavg_DeMaster_2019,'sigma',Fdust1sd_DeMaster_2019),0,inf);
+z4b_DeMaster_2019 = rand(1,n);
+icdfFdust_DeMaster_2019 = icdf(pdfFdust_DeMaster_2019,...
+    z4b_DeMaster_2019);
+
+FlowTweathavg_DeMaster_2019 = 0.1;
+FlowTweath1sd_DeMaster_2019 = 0.2;
+pdfFlowTweath_DeMaster_2019 = truncate(makedist('Normal','mu',...
+    FlowTweathavg_DeMaster_2019,'sigma',...
+    FlowTweath1sd_DeMaster_2019),0,inf);
+z9b_DeMaster_2019 = rand(1,n);
+icdfFlowTweath_DeMaster_2019 = icdf(pdfFlowTweath_DeMaster_2019,...
+    z9b_DeMaster_2019);
+
+Fhydrothermalavg_DeMaster_2019 = 0.4;
+Fhydrothermal1sd_DeMaster_2019 = 0.2;
+pdfFhydrothermal_DeMaster_2019 = truncate(makedist('Normal','mu',...
+    Fhydrothermalavg_DeMaster_2019,'sigma',...
+    Fhydrothermal1sd_DeMaster_2019),0,inf);
+z5b_DeMaster_2019 = rand(1,n);
+icdfFhydrothermal_DeMaster_2019 = ...
+    icdf(pdfFhydrothermal_DeMaster_2019,z5b_DeMaster_2019);
+
+F_sources_DeMaster_2019 = icdfFriver_DeMaster_2019 + ...
+    icdfFriverasi_DeMaster_2019 + icdfFGWfresh_DeMaster_2019 +...
+    icdfFdust_DeMaster_2019 + icdfFlowTweath_DeMaster_2019 + ...
+    icdfFhydrothermal_DeMaster_2019;
+
+d30Si_norm_sources_DeMaster_2019 = ...
+    (icdfFdust_DeMaster_2019.*icdfd30Sidust + ...
+    icdfFhydrothermal_DeMaster_2019.*...
+    icdfd30Sihydrothermal + ...
+    icdfFriver_DeMaster_2019.*icdfd30Siriver + ...
+    icdfFlowTweath_DeMaster_2019.*icdfd30SilowTweath +...
+    icdfFriverasi_DeMaster_2019.*icdfd30Siriverasi +...
+    icdfFGWfresh_DeMaster_2019.*icdfd30SiGWfresh)./...
+    F_sources_DeMaster_2019;
+
+Fdiatommin_DeMaster_2019 = 7.4;
+Fdiatommax_DeMaster_2019 = 9.8;
+pdfFdiatom_DeMaster_2019 = truncate(makedist('Uniform','Lower',...
+    Fdiatommin_DeMaster_2019,'Upper',Fdiatommax_DeMaster_2019),...
+    0,inf);
+z0b_DeMaster_2019 = rand(1,n);
+icdfFdiatom_DeMaster_2019 = icdf(pdfFdiatom_DeMaster_2019,...
+    z0b_DeMaster_2019);
+
+Fspongemin_DeMaster_2019 = 0.02;
+Fspongemax_DeMaster_2019 = 0.9;
+pdfFsponge_DeMaster_2019 = truncate(makedist('Uniform','Lower',...
+    Fspongemin_DeMaster_2019,'Upper',Fspongemax_DeMaster_2019),...
+    0,inf);
+z2b_DeMaster_2019 = rand(1,n);
+icdfFsponge_DeMaster_2019 = icdf(pdfFsponge_DeMaster_2019,...
+    z2b_DeMaster_2019);
+
+F_sinks_DeMaster_2019 = icdfFdiatom_DeMaster_2019 +...
+    icdfFsponge_DeMaster_2019;
+
+d30Si_norm_sinks_DeMaster_2019 = ...
+    (icdfFdiatom_DeMaster_2019.*icdfd30Sidiatom +...
+    icdfFsponge_DeMaster_2019.*icdfd30Sisponge)./...
+    F_sinks_DeMaster_2019;
+
+d30Si_norm_mismatch_DeMaster_2019 = d30Si_norm_sources_DeMaster_2019 - ...
+    d30Si_norm_sinks_DeMaster_2019;
+
+F_mismatch_DeMaster_2019 = F_sources_DeMaster_2019-...
+    F_sinks_DeMaster_2019;
+
+figure
+tiledlayout(6,2)
+
+edges_F = -10:0.5:10;
+edges_d30Si = -4:0.2:4;
+
+%plot flux and d30Si mismatches
+nexttile
+histogram(F_mismatch_Treguer_etal_1995,edges_F)
+title('Treguer et al. 1995')
+ylim([0 1500])
+xlim([-10 10])
+xline(0)
+
+nexttile
+histogram(d30Si_norm_mismatch_Treguer_etal_1995,edges_d30Si)
+ylim([0 1000])
+xlim([-4 4])
+xline(0)
+
+nexttile
+histogram(F_mismatch_DeMaster_2002,edges_F)
+title('DeMaster 2002')
+ylim([0 6000])
+xlim([-10 10])
+xline(0)
+
+nexttile
+histogram(d30Si_norm_mismatch_DeMaster_2002,edges_d30Si)
+ylim([0 1000])
+xlim([-4 4])
+xline(0)
+
+nexttile
+histogram(F_mismatch_TDLR2013_noRW,edges_F)
+title('Treguer & De La Rocha 2013, without RW')
+ylim([0 1000])
+xlim([-10 10])
+xline(0)
+
+nexttile
+histogram(d30Si_norm_mismatch_TDLR2013_noRW,edges_d30Si)
+ylim([0 1000])
+xlim([-4 4])
+xline(0)
+
+nexttile
+histogram(F_mismatch_TDLR2013_withRW,edges_F)
+title('Treguer & De La Rocha 2013, with RW')
+ylim([0 1000])
+xlim([-10 10])
+xline(0)
+
+nexttile
+histogram(d30Si_norm_mismatch_TDLR2013_withRW,edges_d30Si)
+ylim([0 1000])
+xlim([-4 4])
+xline(0)
+
+nexttile
+histogram(F_mismatch_DeMaster_2019,edges_F)
+title('DeMaster 2019 budget')
+ylim([0 1000])
+xlim([-10 10])
+xline(0)
+
+nexttile
+histogram(d30Si_norm_mismatch_DeMaster_2019,edges_d30Si)
+xlabel('\Delta^3^0Si')
+ylim([0 1000])
+xlim([-4 4])
+xline(0)
+
+nexttile
+histogram(F_sources-(F_sinks + icdfFRW),edges_F)
+title('this study')
+xlabel('flux (Tmol)')
+ylabel('count')
+xlim([-10 10])
+xline(0)
+
+%also note to self that I still need to go through the rest of this code
+%and swap out xlsread for readmatrix/readtable
+
+%%
 %This section uses the estimates of the flux-weighted marine silica sinks
-%(diatom + sponges + reverse weathering) and d30Si datasets of continental
+%(diatom + sponges + reverse weathering) and d30Si datasets of terrestrial
 %silica sinks (phytoliths, pedogenic clays, freshwater diatoms) to invert
-%for the size of the continental silica sink in order for the combination
+%for the size of the terrestrial silica sink in order for the combination
 %of marine + continental silica sinks to be in mass balance with BSE.
 
 %Calculate size and flux-weighted d30Si distribution for marine sinks.
@@ -643,7 +1159,8 @@ d30Si_norm_sinks_marine = (icdfFdiatom.*icdfd30Sidiatom + icdfFsponge.*...
     icdfd30Sisponge + icdfFRW.*d30SiRW_est)./F_sinks_marine;
 
 %Load pedogenic clay and generate pdf
-pedclaydata = xlsread('d30Si_data_compilation_05072021.xlsx',16,'A:A');
+pedclaydata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    16,'Range','A:A');
 pdfpedclay = fitdist(pedclaydata,'Kernel');
 zclay = rand(1,n);
 icdfClay = icdf(pdfpedclay,zclay);
@@ -676,7 +1193,8 @@ xlim([-6 3])
 legend('clay data','proposed unmixed fit')
 
 %Grab phytolith data from spreadsheet and calculate pdf.
-phytdata = xlsread('d30Si_data_compilation_05072021.xlsx',17,'A:A');
+phytdata = readmatrix('d30Si_data_compilation_11232022.xlsx','Sheet',...
+    17,'Range','A:A');
 pdfd30Siphyt_data = fitdist(phytdata,'Kernel');
 zphyt2 = rand(1,n);
 icdfd30Siphyt_data = icdf(pdfd30Siphyt_data,zphyt2);
@@ -697,7 +1215,8 @@ xlim([-6 3])
 legend('phytolith data','kernel pdf estimate')
 
 %Grad freshwater diatom data from spreadsheet and calculate pdf
-freshdiatomdata = xlsread('d30Si_data_compilation_05072021.xlsx',18,'A:A');
+freshdiatomdata = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',18,'Range','A:A');
 pdfd30Sifreshdiatom_data = fitdist(freshdiatomdata,'Kernel');
 zfreshdiatom = rand(1,n);
 icdfd30Sifreshdiatom_data = icdf(pdfd30Sifreshdiatom_data,zfreshdiatom);
@@ -762,11 +1281,11 @@ for counter21 = 1:length(zz_vector)
     F_cont_mix3_NaNs(counter21) = sum(isnan(F_cont_mix3(:,counter21)))/n*100;
 end
 
-%Generate figure to visualize continental silica sink estimates using
+%Generate figure to visualize terrestrial silica sink estimates using
 %ternary plots.
 
 figure
-%Plot estimates of total continental silica sink size required for mass
+%Plot estimates of total terrestrial silica sink size required for mass
 %balance for each mixture.
 subplot(3,2,1)
 ternpcolor(xx_vector,yy_vector,F_cont_mix3_medians)
@@ -799,6 +1318,9 @@ terncontour(xx_vector,yy_vector,zz_vector,F_cont_mix3_NaNs,[5 10 15 20 25])
 F_DSi_weathflux_mix3 = zeros(n,length(zz_vector));
 cont_storage_ratio_mix3 = zeros(n,length(zz_vector));
 cont_storage_ratio_mix3_medians = zeros(length(zz_vector),1);
+F_pedclay = zeros(length(zz_vector),1);
+F_phyt = zeros(length(zz_vector),1);
+F_freshdiatom = zeros(length(zz_vector),1);
 
 %Run mass balance calculations.
 for counter22 = 1:length(zz_vector)
@@ -809,18 +1331,91 @@ for counter22 = 1:length(zz_vector)
        F_DSi_weathflux_mix3(:,counter22);
    cont_storage_ratio_mix3_medians(counter22) = median(cont_storage_ratio_mix3...
        (isfinite(cont_storage_ratio_mix3(:,counter22)),counter22));
+   F_pedclay(counter22) = F_cont_mix3_medians(counter22)*xx_vector(counter22);
+   F_phyt(counter22) = F_cont_mix3_medians(counter22)*yy_vector(counter22);
+   F_freshdiatom(counter22) = F_cont_mix3_medians(counter22)*zz_vector(counter22);
 end
 
-%Plot continental storage ratios.
+%Plot terrestrial storage ratios.
 subplot(3,2,5)
 ternpcolor(xx_vector,yy_vector,cont_storage_ratio_mix3_medians)
 caxis([0 0.8])
 title('clay:DSi ratio')
 
-%Plot contours of continental storage ratios.
+%Plot contours of terrestrial storage ratios.
 subplot(3,2,6)
 terncontour(xx_vector,yy_vector,zz_vector,cont_storage_ratio_mix3_medians,...
     0.05:0.05:0.75)
+%%
+figure
+subplot(3,2,1)
+ternpcolor(xx_vector,yy_vector,F_pedclay)
+caxis([0 20])
+colorbar
+title('ped clay')
+
+subplot(3,2,2)
+terncontour(xx_vector,yy_vector,zz_vector,F_pedclay,8:2:16)
+
+subplot(3,2,3)
+ternpcolor(xx_vector,yy_vector,F_phyt)
+caxis([0 20])
+colorbar
+title('phyt')
+
+subplot(3,2,4)
+terncontour(xx_vector,yy_vector,zz_vector,F_phyt,1:1:5)
+
+subplot(3,2,5)
+ternpcolor(xx_vector,yy_vector,F_freshdiatom)
+caxis([0 20])
+colorbar
+title('fresh diatom')
+
+subplot(3,2,6)
+terncontour(xx_vector,yy_vector,zz_vector,F_freshdiatom,1:1:8)
+
+%%
+%calculate statistics for each terrestrial sink
+F_pedclay_filter = F_pedclay(F_cont_mix3_NaNs<5);
+F_phyt_filter = F_phyt(F_cont_mix3_NaNs<5);
+F_freshdiatom_filter = F_freshdiatom(F_cont_mix3_NaNs<5);
+cont_storage_ratio_filter = ...
+    cont_storage_ratio_mix3_medians(F_cont_mix3_NaNs<5);
+
+F_pedclay_stats.median = median(F_pedclay_filter);
+F_pedclay_stats.p10 = prctile(F_pedclay_filter,10);
+F_pedclay_stats.p90 = prctile(F_pedclay_filter,90);
+F_pedclay_stats.min = min(F_pedclay_filter);
+F_pedclay_stats.max = max(F_pedclay_filter);
+
+F_phyt_stats.median = median(F_phyt_filter);
+F_phyt_stats.p10 = prctile(F_phyt_filter,10);
+F_phyt_stats.p90 = prctile(F_phyt_filter,90);
+F_phyt_stats.min = min(F_phyt_filter);
+F_phyt_stats.max = max(F_phyt_filter);
+
+F_freshdiatom_stats.median = median(F_freshdiatom_filter);
+F_freshdiatom_stats.p10 = prctile(F_freshdiatom_filter,10);
+F_freshdiatom_stats.p90 = prctile(F_freshdiatom_filter,90);
+F_freshdiatom_stats.min = min(F_freshdiatom_filter);
+F_freshdiatom_stats.max = max(F_freshdiatom_filter);
+
+cont_storage_ratio_mix3_stats.median = median(cont_storage_ratio_filter);
+cont_storage_ratio_mix3_stats.p10 = prctile(cont_storage_ratio_filter,10);
+cont_storage_ratio_mix3_stats.p90 = prctile(cont_storage_ratio_filter,90);
+cont_storage_ratio_mix3_stats.min = min(cont_storage_ratio_filter);
+cont_storage_ratio_mix3_stats.max = max(cont_storage_ratio_filter);
+
+F_silweathtot = F_freshdiatom + F_phyt + F_pedclay./...
+    cont_storage_ratio_mix3_medians;
+F_silweathtot_filter = F_silweathtot(F_cont_mix3_NaNs<5);
+
+F_silweath_stats.median = median(F_silweathtot_filter);
+F_silweath_stats.p10 = prctile(F_silweathtot_filter,10);
+F_silweath_stats.p90 = prctile(F_silweathtot_filter,90);
+F_silweath_stats.min = min(F_silweathtot_filter);
+F_silweath_stats.max = max(F_silweathtot_filter);
 
 %%
 %This section uses seawater data to estimate d30Si diatom to assess whether 
@@ -831,11 +1426,16 @@ xvals_pdf = -6:0.1:3;
 
 %Grab seawater DSi d30Si data from spreadsheet and identify subsets of
 %seawater dataset.
-seawaterdata = xlsread('d30Si_data_compilation_05072021.xlsx',2,'A:A');
-seawaterdepth = xlsread('d30Si_data_compilation_05072021.xlsx',2,'H:H');
+seawaterdata = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',2,'Range','A:A');
+seawaterdata = seawaterdata(2:end);
+seawaterdepth = readmatrix('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',2,'Range','H:H');
+seawaterdepth = seawaterdepth(2:end);
 seawater_shallow = seawaterdata(seawaterdepth<500);
-[num4,txt4,raw4] = xlsread('d30Si_data_compilation_05072021.xlsx',2,'E:E');
-seawaterlocation = categorical(txt4(2:end));
+seawaterlocation_cell = readcell('d30Si_data_compilation_11232022.xlsx',...
+    'Sheet',2,'Range','E:E');
+seawaterlocation = categorical(seawaterlocation_cell(2:end));
 seawaterdataSO = seawaterdata(seawaterlocation == 'Southern Ocean');
 seawaterdataSOshallow = seawaterdata(seawaterlocation == 'Southern Ocean'...
     & seawaterdepth<500);
